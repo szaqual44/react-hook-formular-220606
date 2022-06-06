@@ -1,0 +1,138 @@
+utwórz strone z formularzem wykorzystujący react hook form https://react-hook-form.com/api/
+Najlepiej inputy, select, datepicker stwórz za pomocą controllerów https://react-hook-form.com/api/usecontroller/controller
+Do inputów, selecta, datepickera możesz skorzystać z gotowych komponentów z https://ant.design/components/overview/
+Formularz składać się powinien z:
+- 1 dropdownu z wartościami "A", "B", "C"
+- 1 input tekstowy
+- 1 input, ale to pole musi być wymagane
+- 1 datepicker
+
+
+
+zielony button submit
+
+
+
+Walidacja:
+gdy z dropdownu zostanie wybrana wartość "C" a w pierwszym inpucie długość tekstu będzie mniejsza niż 5 powinna pokazać się wiadomość "Nie spełnione kryteria" pod dropdownem
+gdy pole wymagane nie zostanie wypełnione powinien pod tym polem pokazać się błąd "To pole jest wymagane"
+gdy data wybrana będzie mniejsza niż dzisiejsza data button powinien zmienić kolor na zółty
+
+
+
+najlepiej spróbuj wydzielić walidacje do custom hooków
+
+
+
+gdy wszystkie walidacje przejdą pomyślnie po kliknięciu w submit wyświetl na ekranie sukces -> alert('sukces')
+Mile widziane jeśli te inputy, select, datepicker będą osobnymi komponentami, dziećmi w formularzu
+
+
+
+podpowiedz: użyj FormProvider, useFormContext()
+
+
+
+
+
+
+import {useForm,  FormProvider} from 'react-hook-form'
+import { useState, useEffect } from "react";
+import Dropdown from './components/Dropdown'
+
+import 'antd/dist/antd.css';
+import './App.css';
+import InputField from './components/InputField';
+import InputFieldRequired from './components/InputFieldRequired';
+import DatePickerComponent from './components/DatePickerComponent';
+import { useValidateButton } from './hooks/useValidateButton';
+import {useValidationDropdown} from './hooks/useValidationDropdown'
+
+function App() {  
+  const methods = useForm()
+  const onSubmit = (data) =>{
+    // console.log('data:' ,data)  
+    if (dropdownValidationMessage==='' && methods.formState.errors.inputFieldRequired ===undefined) alert('Success!')
+    
+  }
+
+
+  //DROPDOWN VALIDATION
+  const dropdownValue = methods.watch("dropdown")
+  const inputField = methods.watch("inputField")
+  
+  const [dropdownValidationMessage,setDropdownValidationMessage] = useState('')
+  const dropdownValidation = (dropdownValue, inputField) =>{
+    let inputLength = String(inputField).length
+    if (dropdownValue === 'C' && inputLength<5) setDropdownValidationMessage('Nie spełnione kryteria')
+    else setDropdownValidationMessage('')
+  }
+  useEffect(()=>{
+    dropdownValidation(dropdownValue,inputField)
+  })
+
+//BUTTON VALIDATION
+  const [color, setColor] = useState('green')
+  const chosenData = methods.watch('dataPicker')
+
+  const validateDate = (chosenData) =>{
+    if (chosenData === undefined) return   
+
+    const currentDate =  new Date()
+    console.log(currentDate)
+    console.log(chosenData)
+    if (chosenData <= currentDate) {
+      setColor('yellow')
+    }
+    else setColor('green')
+   }
+   useEffect(()=>{
+    validateDate(chosenData)
+  })
+
+
+  
+  
+  return (
+    <FormProvider {...methods}>
+      <form onSubmit={methods.handleSubmit(onSubmit) }>        
+          <Dropdown />
+            {dropdownValidationMessage}
+          <InputField />
+          <InputFieldRequired />
+          {methods.formState.errors.inputFieldRequired?.type ==='required' && <span>To pole jest wymagane</span>}
+
+          <DatePickerComponent />
+          <input type="submit"  style={{backgroundColor:`${color}`}}/>
+          {methods.watch("inputField")}
+      </form>
+    </FormProvider>      
+    
+  );
+}
+
+export default App;
+
+
+
+
+
+
+
+
+
+
+
+
+//DROPDOWN VALIDATION
+// useEffect(() => {
+//   validationDropdown()
+// });
+//   const [message,setMessage] = useState('s')
+//   const validationDropdown = () =>{
+//     if (dropdownValue === 'C') alert('ssdsdssssss')
+//     console.log(methods.watch())
+//   }
+  // console.log(methods.watch())
+  // console.log('App: ', validationDropdown)
+  
